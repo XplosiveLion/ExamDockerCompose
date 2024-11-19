@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  maestros_app:
+    build:
+      context: .
+      dockerfile: dockerfile_maestros.yaml
+    environment:
+      DB_HOST: maestros_db
+      DB_USER: kevin
+      DB_PASSWORD: Mecanismo42
+      DB_NAME: maestros
+      API_ALUMNO: alumnos_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - maestros_db
+
+  alumnos_app:
+    build:
+      context: .
+      dockerfile: dockerfile_alumnos.yaml
+    environment:
+      DB_HOST: alumnos_db
+      DB_USER: kevin
+      DB_PASSWORD: Mecanismo42
+      DB_NAME: alumnos
+    ports:
+      - "8081:80"
+    depends_on:
+      - alumnos_db
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - "8090:80"
+    depends_on:
+      - maestros_db
+      - alumnos_db
+    environment:
+      PMA_ARBITRARY: 1
+      MYSQL_ROOT_PASSWORD: Mecanismo42
+
+  maestros_db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: Mecanismo42
+      MYSQL_DATABASE: maestros
+      MYSQL_USER: kevin
+      MYSQL_PASSWORD: Mecanismo42
+    volumes:
+      - maestros_db:/var/lib/mysql
+      - ./maestros.sql:/docker-entrypoint-initdb.d/maestros.sql
+  alumnos_db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: Mecanismo42
+      MYSQL_DATABASE: alumnos
+      MYSQL_USER: kevin
+      MYSQL_PASSWORD: Mecanismo42
+    volumes:
+      - alumnos_db:/var/lib/mysql
+      - ./alumnos.sql:/docker-entrypoint-initdb.d/alumnos.sql
+
+    
+
+
+
+volumes:
+  alumnos_db:
+  maestros_db:
